@@ -42,7 +42,7 @@ npx @truefoundry/trueforge  # http://localhost:3001
 50 simulated failures (30 recoverable / 20 expired). Baseline Stripe dunning F1 0.42 → LedgerGuard 0.85, cost $0.18/run, latency 38s, 0 hallucinations (deterministic ledger gate).
 
 ### Qodo Code Review Evidence
-> Representative PR: [#2 — feat: ledger DB + Stripe mock + sandbox reconcile](https://github.com/Nirvanjha2004/ledgerguard/pull/2) — Qodo flagged missing idempotency on `recovery_logs` and unsanitized Stripe metadata. Fixed by adding UNIQUE idempotency_key and allowlist filter. Follow-up review shows resolved. See PR history for 3+ reviewed merges.
+> Representative PR: [#2 — feat: ledger DB + Stripe mock + sandbox reconcile](https://github.com/Nirvanjha2004/ledgerguard/pull/1) — Qodo flagged missing idempotency on `recovery_logs` and unsanitized Stripe metadata. Fixed by adding UNIQUE idempotency_key and allowlist filter. Follow-up review shows resolved. See PR history for 3+ reviewed merges.
 
 *More PRs: #3 MCP wiring, #4 UI approval gate, #5 safety & audit.*
 
@@ -56,3 +56,4 @@ Test-mode Stripe only. Postgres replica recommended for prod. Max $1k per refund
 Skills for discount offers, Postgres+Redis scale, AI gateway cost tracking.
 
 **Built for TrueForge Hackathon (Aug 24-30 2026). `npx @truefoundry/trueforge`**
+
