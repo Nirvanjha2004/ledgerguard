@@ -1,6 +1,15 @@
 ﻿import Stripe from "stripe";
 
-const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
+// Fixed per Qodo High: explicit mock detection (sk_test_mock or STRIPE_MODE=mock)
+const MODE = process.env.STRIPE_MODE === "mock" || process.env.STRIPE_SECRET_KEY === "sk_test_mock"
+  ? "mock"
+  : process.env.STRIPE_SECRET_KEY?.startsWith("sk_live")
+    ? "live"
+    : process.env.STRIPE_SECRET_KEY ? "test" : "mock";
+
+const stripe = (MODE === "test" || MODE === "live") && process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  : null;
 
 export async function listFailedIntents(limit = 20) {
   if (!stripe) {
@@ -12,15 +21,29 @@ export async function listFailedIntents(limit = 20) {
 }
 
 export async function createRefund(paymentIntent: string, amount: number | undefined, idempotencyKey: string) {
-  if (!stripe) throw new Error("STRIPE_SECRET_KEY missing — use MCP or set env");
-  if (!idempotencyKey) throw new Error("idempotencyKey is required (Qodo: avoid amount-based default collision)");
-  // Fixed: idempotencyKey now required, no default from amount
-  return stripe.refunds.create(
-    { payment_intent: paymentIntent, ...(amount ? { amount } : {}) },
-    { idempotencyKey }
-  );
+  if (!idempotencyKey) throw new Error("idempotencyKey is required");
+  // Fixed per Qodo Medium: consistent mock behavior — mock refunds work too
+  if (!stripe) {
+    return {
+      id: `re_mock_${idempotencyKey}`,
+      payment_intent: paymentIntent,
+      amount: amount ?? null,
+      status: "succeeded",
+      mock: true,
+      idempotencyKey,
+    };
+  }
+  // Fixed per Qodo Medium: distinguish undefined from 0 (0-amount must not silently full-refund)
+  const params: Stripe.RefundCreateParams = { payment_intent: paymentIntent };
+  if (amount !== undefined) {
+    if (typeof amount !== "number" || Number.isNaN(amount) || amount < 0) {
+      throw new Error(`Invalid refund amount: ${amount}`);
+    }
+    params.amount = amount;
+  }
+  return stripe.refunds.create(params, { idempotencyKey });
 }
 
 export function getStripeMode() {
-  return process.env.STRIPE_SECRET_KEY?.startsWith("sk_live") ? "live" : process.env.STRIPE_SECRET_KEY ? "test" : "mock";
+  return MODE; // "mock" | "test" | "live" — sk_test_mock now correctly returns mock
 }
