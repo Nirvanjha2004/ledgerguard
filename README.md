@@ -44,7 +44,7 @@ npx @truefoundry/trueforge  # http://localhost:3001
 ### Qodo Code Review Evidence
 > Representative PR: [#2 — feat: ledger DB + Stripe mock + sandbox reconcile](https://github.com/Nirvanjha2004/ledgerguard/pull/1) — Qodo flagged missing idempotency on `recovery_logs` and unsanitized Stripe metadata. Fixed by adding UNIQUE idempotency_key and allowlist filter. Follow-up review shows resolved. See PR history for 3+ reviewed merges.
 
-*More PRs: #3 MCP wiring, #4 UI approval gate, #5 safety & audit.*
+*More PRs: #3 UI per-row approval (#3 <https://github.com/Nirvanjha2004/ledgerguard/pull/3>_) — Qodo docs review, no Highs.
 
 ### Demo Video
 ~3 mins: inject failures → agent investigates → sandbox runs → subagents research → HOLDING FOR APPROVAL $1,840 → Approve → live Stripe test refund + DB update + Slack post.
@@ -56,4 +56,5 @@ Test-mode Stripe only. Postgres replica recommended for prod. Max $1k per refund
 Skills for discount offers, Postgres+Redis scale, AI gateway cost tracking.
 
 **Built for TrueForge Hackathon (Aug 24-30 2026). `npx @truefoundry/trueforge`**
+
 
