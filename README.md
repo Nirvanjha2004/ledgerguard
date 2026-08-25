@@ -58,3 +58,11 @@ Skills for discount offers, Postgres+Redis scale, AI gateway cost tracking.
 **Built for TrueForge Hackathon (Aug 24-30 2026). `npx @truefoundry/trueforge`**
 
 
+## Verify in 60 seconds
+
+```bash
+npx @truefoundry/trueforge          # harness up
+# Import agent.json → chat "Investigate failures"
+```
+
+See docs/judges.md for the full checklist (MCP green → sandbox panel → subagents x3 → red approval gate $1,840 → refresh survives).
