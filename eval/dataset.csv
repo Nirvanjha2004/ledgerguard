@@ -1,0 +1,3 @@
+﻿pi,amount,ledger_status,stripe_error,expected
+pi_1Cus001,4900,unpaid,card_declined,recoverable
+pi_1Cus007_exp,4900,failed,expired_card,non_recoverable
