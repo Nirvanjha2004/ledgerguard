@@ -6,7 +6,7 @@ git clone https://github.com/Nirvanjha2004/ledgerguard && cd ledgerguard
 
 # 2. Env
 cp .env.example .env
-# edit .env: STRIPE_SECRET_KEY=sk_test_..., DATABASE_URL=file:./data/ledger.db, OPENAI_API_KEY=sk-...
+# edit .env: STRIPE_SECRET_KEY=sk_test_..., DATABASE_URL=file:./data/ledger.db, OPENROUTER_API_KEY=sk-or-v1-...
 
 # 3. Seed ledger
 npm install
@@ -30,3 +30,4 @@ npm run dev  # http://localhost:3000/health
 ```
 
 Demo video: `docs/demo.mp4` (3 mins)
+

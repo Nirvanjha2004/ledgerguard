@@ -22,7 +22,7 @@ LedgerGuard connects **Stripe (MCP) + Postgres (MCP) + Slack (MCP)**, writes its
 ```bash
 git clone https://github.com/Nirvanjha2004/ledgerguard
 cd ledgerguard
-cp .env.example .env  # set STRIPE_SECRET_KEY, DATABASE_URL, OPENAI_API_KEY
+cp .env.example .env  # set STRIPE_SECRET_KEY, DATABASE_URL, OPENROUTER_API_KEY
 npm install
 npm run seed  # creates data/ledger.db with 50 failures ($3,240 at risk)
 npx @truefoundry/trueforge  # http://localhost:3001
@@ -52,4 +52,5 @@ npx @truefoundry/trueforge          # harness up
 ```
 
 See docs/judges.md for the full checklist (MCP green → sandbox panel → subagents x3 → red approval gate $1,840 → refresh survives).
+
 

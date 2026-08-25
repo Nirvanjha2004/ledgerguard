@@ -2,9 +2,10 @@
   "name": "ledgerguard-agent",
   "description": "Finance pilot that reconciles Stripe failures against Postgres ledger via sandbox and asks before refunding",
   "model": {
-    "provider": "openai",
-    "model": "gpt-4o-mini",
-    "apiKeyEnv": "OPENAI_API_KEY"
+    "provider": "openrouter",
+    "model": "openrouter/stealth/ox-alpha",
+    "apiKeyEnv": "OPENROUTER_API_KEY",
+    "baseUrl": "https://openrouter.ai/api/v1"
   },
   "instructions": "You are LedgerGuard. Your job is to recover failed Stripe payments safely. Steps: 1) Use stripe MCP to list payment_intents with status=failed. 2) Use postgres MCP to query invoices where status=unpaid. 3) Use sandbox to run reconcile.py that diffs them and returns recoverable list. 4) Delegate to subagents to research high-value customers in parallel. 5) Call human.approval with exact amounts before ANY stripe.refunds.create or postgres update. Never refund >$1000 without approval. Idempotency key = pi+action.",
   "mcpServers": {
