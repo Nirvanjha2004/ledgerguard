@@ -1,24 +1,20 @@
 ﻿import express from "express";
 import crypto from "crypto";
-import { stripe } from "../mcp/stripeMock"; // placeholder for stripe SDK
+import { stripe } from "../mcp/stripeMock";
 
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || "whsec_test";
 
-// Fixed per Qodo: handle Stripe header format t=...,v1=... and add timestamp tolerance + idempotency
 export function verifyStripeSignature(rawBody: string, signatureHeader: string, secret: string): boolean {
   if (!signatureHeader || !secret) return false;
   try {
-    // Stripe header: t=1492774577,v1=5257a869...,v0=...
     const parts = signatureHeader.split(",");
     const tPart = parts.find(p => p.startsWith("t="));
     const v1Part = parts.find(p => p.startsWith("v1="));
-    // Fallback to legacy hex if not Stripe format (for tests)
     if (!tPart || !v1Part) {
       const expected = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
       return crypto.timingSafeEqual(Buffer.from(signatureHeader), Buffer.from(expected));
     }
     const timestamp = parseInt(tPart.slice(2), 10);
-    // Replay protection: 5min tolerance (Qodo suggested)
     if (Math.abs(Date.now()/1000 - timestamp) > 300) return false;
     const signedPayload = `${timestamp}.${rawBody}`;
     const expected = crypto.createHmac("sha256", secret).update(signedPayload).digest("hex");
@@ -29,12 +25,22 @@ export function verifyStripeSignature(rawBody: string, signatureHeader: string, 
   }
 }
 
-// Idempotency store (in prod: DB UNIQUE on event.id)
-const seenEvents = new Set<string>();
+// Fixed per Qodo High: use TTL + size cap instead of unbounded Set (was DoS risk)
+// In prod: use DB UNIQUE on event_id with 24h retention
+const seenEvents = new Map<string, number>();
+const MAX_SEEN = 10000;
+const TTL_MS = 24 * 60 * 60 * 1000;
 export function isDuplicateEvent(eventId: string): boolean {
+  const now = Date.now();
+  // GC expired
+  for (const [k, ts] of seenEvents) if (now - ts > TTL_MS) seenEvents.delete(k);
   if (seenEvents.has(eventId)) return true;
-  seenEvents.add(eventId);
-  // In prod: INSERT INTO processed_events (event_id) ON CONFLICT DO NOTHING
+  // Size cap: evict oldest if over limit (Qodo flagged unbounded growth)
+  if (seenEvents.size >= MAX_SEEN) {
+    const oldest = seenEvents.keys().next().value;
+    if (oldest) seenEvents.delete(oldest);
+  }
+  seenEvents.set(eventId, now);
   return false;
 }
 
