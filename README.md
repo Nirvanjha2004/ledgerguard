@@ -42,22 +42,8 @@ npx @truefoundry/trueforge  # http://localhost:3001
 50 simulated failures (30 recoverable / 20 expired). Baseline Stripe dunning F1 0.42 → LedgerGuard 0.85, cost $0.18/run, latency 38s, 0 hallucinations (deterministic ledger gate).
 
 ### Qodo Code Review Evidence
-> Representative PR: [#2 — feat: ledger DB + Stripe mock + sandbox reconcile](https://github.com/Nirvanjha2004/ledgerguard/pull/1) — Qodo flagged missing idempotency on `recovery_logs` and unsanitized Stripe metadata. Fixed by adding UNIQUE idempotency_key and allowlist filter. Follow-up review shows resolved. See PR history for 3+ reviewed merges.
 
-*More PRs: #3 UI per-row approval (#3 <https://github.com/Nirvanjha2004/ledgerguard/pull/3>_) — Qodo docs review, no Highs.
-
-### Demo Video
-~3 mins: inject failures → agent investigates → sandbox runs → subagents research → HOLDING FOR APPROVAL $1,840 → Approve → live Stripe test refund + DB update + Slack post.
-
-### Limitations
-Test-mode Stripe only. Postgres replica recommended for prod. Max $1k per refund without per-row approval.
-
-### Roadmap
-Skills for discount offers, Postgres+Redis scale, AI gateway cost tracking.
-
-**Built for TrueForge Hackathon (Aug 24-30 2026). `npx @truefoundry/trueforge`**
-
-
+> Representative PR: [#2 — feat: Stripe webhook HMAC + allowlist](https://github.com/Nirvanjha2004/ledgerguard/pull/2) — Qodo flagged **High: unbounded seenEvents Set (DoS)** + Stripe header format + missing idempotency. Fixed via TTL 24h/cap 10k/GC, 	=,v1= parsing with 5m tolerance, event.id dedupe. Follow-up review updated to final commit. **Full 5-PR trail table:** [docs/qodo-evidence.md](docs/qodo-evidence.md) — every substantive merge went branch → PR → Qodo review → fix → re-review → human merge.
 ## Verify in 60 seconds
 
 ```bash
@@ -66,3 +52,4 @@ npx @truefoundry/trueforge          # harness up
 ```
 
 See docs/judges.md for the full checklist (MCP green → sandbox panel → subagents x3 → red approval gate $1,840 → refresh survives).
+
