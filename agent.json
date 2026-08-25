@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "ledgerguard-agent",
   "description": "Finance pilot that reconciles Stripe failures against Postgres ledger via sandbox and asks before refunding",
   "model": {
