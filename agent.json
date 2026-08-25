@@ -1,0 +1,45 @@
+﻿{
+  "name": "ledgerguard-agent",
+  "description": "Finance pilot that reconciles Stripe failures against Postgres ledger via sandbox and asks before refunding",
+  "model": {
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "apiKeyEnv": "OPENAI_API_KEY"
+  },
+  "instructions": "You are LedgerGuard. Your job is to recover failed Stripe payments safely. Steps: 1) Use stripe MCP to list payment_intents with status=failed. 2) Use postgres MCP to query invoices where status=unpaid. 3) Use sandbox to run reconcile.py that diffs them and returns recoverable list. 4) Delegate to subagents to research high-value customers in parallel. 5) Call human.approval with exact amounts before ANY stripe.refunds.create or postgres update. Never refund >$1000 without approval. Idempotency key = pi+action.",
+  "mcpServers": {
+    "stripe": {
+      "command": "npx",
+      "args": ["-y", "@stripe/mcp", "--tools=paymentIntents.list,refunds.create"],
+      "env": { "STRIPE_SECRET_KEY": "${STRIPE_SECRET_KEY}" }
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "${DATABASE_URL}"]
+    },
+    "slack": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-slack"]
+    }
+  },
+  "sandbox": {
+    "enabled": true,
+    "provider": "local",
+    "timeout": 30000
+  },
+  "approvals": {
+    "required": [
+      { "tool": "stripe.refunds.create", "message": "Refund is irreversible. Holding for your approval. Licence required." },
+      { "tool": "postgres.query", "match": "UPDATE|DELETE|INSERT", "message": "DB write is irreversible. Holding for approval." }
+    ]
+  },
+  "subagents": {
+    "enabled": true,
+    "maxConcurrent": 3,
+    "instruction": "Research one customer: check Stripe history + ledger, return recoverable amount and reason."
+  },
+  "session": {
+    "persistence": true
+  },
+  "skills": ["finance-refund-policy"]
+}
